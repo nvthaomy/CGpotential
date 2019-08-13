@@ -61,11 +61,6 @@ def getUspline(knots, rcut, rs, MaxPairEnekBT = 20, kB = 1,TempSet = 1):
     if len(ind):
         #find the first index where energy is valid
         i = ind[-1] + 1
-        print ('last index is ',i)
-        print('energy is of ith value',u_spline[i])
-        print('energy is of i-1th value',u_spline[i-1])
-        print ('slope is ',du_spline[i])
-        print ('slope is ',(u_spline[i] - u_spline[i-1])/(rs[i]-rs[i-1]) )
         #do a linear extrapolation in the hard core region
         u_spline[:i] = (rs[i] - rs[:i]) * -du_spline[i] + u_spline[i]
         for j in ind:
