@@ -33,7 +33,16 @@ class Spline:
         t = x-k
         v = self.SPCoeff[0,k] + t*( self.SPCoeff[1,k] + t*( self.SPCoeff[2,k] + t*self.SPCoeff[3,k] ) )
         return v
-
+ 
+    def DVal(self,r):
+        if r > self.rcut:
+            return 0
+        x = r*self.SPDist[1]
+        k = np.min( [np.floor(x).astype(int), self.nknot-1] )
+        t = x-k
+        dv = ( self.SPCoeff[1,k] + t*( 2*self.SPCoeff[2,k] + t * 3 * self.SPCoeff[3,k] ) ) * self.SPDist[1]
+        return dv
+    
     def __call__(self,arg):
         return self.Val(arg)
 
