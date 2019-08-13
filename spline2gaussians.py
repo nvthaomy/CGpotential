@@ -31,7 +31,7 @@ N = args.N
 
 def obj(x,w,rs,u_spline): 
     """Calculate Boltzmann weighted residuals"""
-    n = len(x)/2 #number of Gaussians
+    n = int(len(x)/2) #number of Gaussians
     u_gauss = getU(x,rs,n)
     return w*(u_gauss-u_spline)
 
