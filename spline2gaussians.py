@@ -118,7 +118,7 @@ if not args.nostage:
         gauss = least_squares(obj,x0, args = (w,rs,u_spline),bounds=bounds)
         xopt = gauss.x
         sys.stdout.write('\n{}'.format(xopt))
-        sys.stdout.write('\nLSQ: {}\n'.format(gauss.fun[0]))
+        sys.stdout.write('\nLSQ: {}\n'.format(gauss.cost))
         plot(xopt,rs,i+1,u_spline)
 
 else:
@@ -135,7 +135,7 @@ else:
     xopt = gauss.x
     sys.stdout.write('\nParameters from optimizing {} Gaussians:'.format(n))
     sys.stdout.write('\n{}'.format(xopt))
-    sys.stdout.write('\nLSQ: {}\n'.format(gauss.fun[0]))
+    sys.stdout.write('\nLSQ: {}\n'.format(gauss.cost))
     plot(xopt,rs,n,u_spline)
 
 u_gauss = getUgauss(xopt,rs,n)
