@@ -34,7 +34,7 @@ parser.add_argument("-x0", type = str,help="initial values for Gaussian paramete
 parser.add_argument("-N", default = 1000, type = int, help="number of points used for fitting")
 parser.add_argument("-nostage", action = 'store_true')
 parser.add_argument("-niter", type = int, default = 1000, help ="number of local minimum optimizations")
-parser.add_argument("-T", type = float, default = 0.0000005, 
+parser.add_argument("-T", type = float, default = 0.0000002, 
                     help="The “temperature” parameter for the accept or reject criterion. Higher “temperatures” mean that larger jumps in function value will be accepted. For best results T should be comparable to the separation (in function value) between local minima.")
 args = parser.parse_args() 
 
@@ -163,9 +163,12 @@ if not args.nostage:
         else: 
             gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
                                 niter = niter, accept_test = mybounds)
+            # if want to print out values of minimum found and wheter gets accepted (1) or not (0)
+            #gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
+            #                    niter = niter, accept_test = mybounds,callback=print_fun)
         xopt = gauss.x
         sys.stdout.write('\n{}'.format(xopt))
-        sys.stdout.write('\nGlobal min: {}\n'.format(gauss.fun))
+        sys.stdout.write('\nObjective: {}\n'.format(gauss.fun))
         plot(xopt,rs,i+1,u_spline)
 
 else:
@@ -180,7 +183,7 @@ else:
     sys.stdout.write('\nInitial guess:')
     sys.stdout.write('\n{}'.format(x0))
     gauss =basinhopping(obj, x0, minimizer_kwargs=minimizer_kwargs, T = 0.00002,
-                            niter=10, accept_test=mybounds, callback=print_fun)
+                            niter=10, accept_test=mybounds)
     xopt = gauss.x
     sys.stdout.write('\nParameters from optimizing {} Gaussians:'.format(n))
     sys.stdout.write('\n{}'.format(xopt))
