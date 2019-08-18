@@ -9,9 +9,16 @@ import numpy as np
 from scipy.optimize import least_squares
 import spline, sys, argparse, re
 import matplotlib.pyplot as plt
-"""optimizing in stages by default (recommended), 
-   can also optimize in one stage by providind intial values and using -nostage flag"""
+"""Fitting Gaussians to spline using least squares 
+   obj: objective function, calculates the Boltzmann weighted residuals 
+   constrains Gaussians with even index to be repulsive, and odd index to be attractive
+   by default, optimize with incremental number of Gaussians. Initial guess for 1st Gaussian opt is B = max value of spline potential, K = 1,
+       initial values for the remaining opt are optimized parameters from previous opt + [B=0,K=0] for the newly added Gaussian
+   can also optimize in one stage by providind intial values and using -nostage flag
 
+   Outputs:
+       Gaussian parameters,energy scale and kappa, in the form: [B1, K1, B2, K2,...,Bn,Kn]   
+   """
 #test command
 #python spline2gaussians-leastsquares.py  -k "2.7835e+02 , 3.3541e+00 , -5.8015e-01, 1.6469e-01 ,-1.1965e-01, 5.2720e-02 , -2.3451e-02, 2.6243e-03" -cut 11 -n 2
 

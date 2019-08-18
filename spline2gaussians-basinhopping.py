@@ -31,10 +31,10 @@ parser.add_argument("-k",required = True ,type = str, help="cubic spline knots, 
 parser.add_argument("-cut", required = True, type = float, help = "cut off distance")
 parser.add_argument("-n", default = 2, type = int, help="number of Gaussians")
 parser.add_argument("-x0", type = str,help="initial values for Gaussian parameters, format '1 0.5 -10  0.1'")
-parser.add_argument("-N", default = 500, type = int, help="number of points used for fitting")
+parser.add_argument("-N", default = 1000, type = int, help="number of points used for fitting")
 parser.add_argument("-nostage", action = 'store_true')
-parser.add_argument("-niter", type = int, default = 500, help ="number of local minimum optimizations")
-parser.add_argument("-T", type = float, default = 0.0000001, 
+parser.add_argument("-niter", type = int, default = 1000, help ="number of local minimum optimizations")
+parser.add_argument("-T", type = float, default = 0.0000005, 
                     help="The “temperature” parameter for the accept or reject criterion. Higher “temperatures” mean that larger jumps in function value will be accepted. For best results T should be comparable to the separation (in function value) between local minima.")
 args = parser.parse_args() 
 
