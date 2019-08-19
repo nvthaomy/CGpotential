@@ -34,7 +34,7 @@ parser.add_argument("-x0", type = str,help="initial values for Gaussian paramete
 parser.add_argument("-N", default = 1000, type = int, help="number of points used for fitting")
 parser.add_argument("-nostage", action = 'store_true')
 parser.add_argument("-niter", type = int, default = 1000, help ="number of local minimum optimizations")
-parser.add_argument("-T", type = float, default = 0.0000002, 
+parser.add_argument("-T", type = float, default = 0.0000002,#0.0000002, 
                     help="The “temperature” parameter for the accept or reject criterion. Higher “temperatures” mean that larger jumps in function value will be accepted. For best results T should be comparable to the separation (in function value) between local minima.")
 args = parser.parse_args() 
 
@@ -45,13 +45,11 @@ def obj(x,rs,u_spline):
     u_gauss = getUgauss(x,rs,n)
     p_spline = weight(rs,u_spline)
     p_gauss = weight(rs,u_gauss)
-    Srel = 0
-    LSQ = 0
-    for i in range(len(rs)):
-        Srel += p_spline[i] * (np.log(p_spline[i]) - np.log(p_gauss[i]))
-        LSQ += (p_spline[i]*(u_gauss[i]-u_spline[i]))**2
-    #return Srel
-    return LSQ/2
+    Srel = p_spline * (np.log(p_spline) - np.log(p_gauss))
+    LSQ  = (p_spline*(u_gauss-u_spline))**2
+
+    return np.sum(Srel)
+    #return np.sum(LSQ/2)
 
 def getUgauss(x,rs,n):
     u_gauss = np.zeros(len(rs))
@@ -138,8 +136,9 @@ T = args.T
 rs = np.linspace(0,rcut,N)
 u_spline, du_spline = getUspline(knots,rcut,rs)
 u_max = np.max(u_spline)
-minimizer_kwargs = {"method": "BFGS","args":(rs,u_spline)}   
-#minimizer_kwargs = {"method": "trust-exact","args":(rs,u_spline)}   
+minimizer_kwargs = {"method": "SLSQP","args":(rs,u_spline)}   
+#minimizer_kwargs = {"method": "BFGS","args":(rs,u_spline)}   
+#minimizer_kwargs = {"method": 'trust-exact',"args":(rs,u_spline),"jac":'2-point',"hess":'2-point'}   
 
 if not args.nostage:   
     for i in range(n):
@@ -159,10 +158,10 @@ if not args.nostage:
         
         if i == n-1:
             gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
-                                niter = niter, accept_test = mybounds)
-        else: 
+                                niter = niter, accept_test = mybounds, callback=print_fun)
+        else:  
             gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
-                                niter = niter, accept_test = mybounds)
+                                niter = 100, accept_test = mybounds, callback=print_fun)
             # if want to print out values of minimum found and wheter gets accepted (1) or not (0)
             #gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
             #                    niter = niter, accept_test = mybounds,callback=print_fun)
@@ -183,11 +182,11 @@ else:
     sys.stdout.write('\nInitial guess:')
     sys.stdout.write('\n{}'.format(x0))
     gauss =basinhopping(obj, x0, minimizer_kwargs=minimizer_kwargs, T = 0.00002,
-                            niter=10, accept_test=mybounds)
+                            niter=niter, accept_test=mybounds)
     xopt = gauss.x
     sys.stdout.write('\nParameters from optimizing {} Gaussians:'.format(n))
     sys.stdout.write('\n{}'.format(xopt))
-    sys.stdout.write('\nGlobal min: {}\n'.format(gauss.fun))
+    sys.stdout.write('\nObjective: {}\n'.format(gauss.fun))
     plot(xopt,rs,n,u_spline)
 
 u_gauss = getUgauss(xopt,rs,n)
