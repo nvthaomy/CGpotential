@@ -11,7 +11,9 @@ import spline, sys, argparse, re
 import matplotlib.pyplot as plt
 """Fitting Gaussians to spline using least squares 
    obj: objective function, calculates the Boltzmann weighted residuals 
-   constrains Gaussians with even index to be repulsive, and odd index to be attractive
+   constrains: 
+       Gaussians with even index to be repulsive, and odd index to be attractive
+       upper bound of repulsive Gaussian is maximum potential from spline, can modify in getBounds
    by default, optimize with incremental number of Gaussians. Initial guess for 1st Gaussian opt is B = max value of spline potential, K = 1,
        initial values for the remaining opt are optimized parameters from previous opt + [B=0,K=0] for the newly added Gaussian
    can also optimize in one stage by providind intial values and using -nostage flag
@@ -78,14 +80,24 @@ def weight(rs,u_spline):
     w = np.exp(-u_spline)
     w = w/np.sum(w)
     return w
+
+    
+rs = np.linspace(0,rcut,N)
+u_spline, du_spline = getUspline(knots,rcut,rs)
+u_max = np.max(u_spline)
+
+w = weight(rs,u_spline)
+
 def getBounds(n):
     bounds = ([],[]) 
+    lower_energybound = -np.inf
+    upper_energybound = u_max
     for i in range(n):
-        if i % 2 == 0:
-            bounds[0].extend([0,0])
-            bounds[1].extend([np.inf,np.inf])
-        else:
-            bounds[0].extend([-np.inf,0])
+        if i % 2 == 0: #bounds of repulsive Gaussian
+            bounds[0].extend([0,0]) #lower bound of B and K
+            bounds[1].extend([upper_energybound,np.inf]) #upper bound of B and K
+        else: #bounds of attractive Gaussian
+            bounds[0].extend([lower_energybound,0])
             bounds[1].extend([0,np.inf])
     return bounds
 def plot(xopt,rs,n,u_spline):
@@ -101,12 +113,6 @@ def plot(xopt,rs,n,u_spline):
     plt.legend(loc='best')
     plt.show()
     
-rs = np.linspace(0,rcut,N)
-u_spline, du_spline = getUspline(knots,rcut,rs)
-u_max = np.max(u_spline)
-
-w = weight(rs,u_spline)
-
 if not args.nostage:   
     for i in range(n):
         bounds = getBounds(i+1)

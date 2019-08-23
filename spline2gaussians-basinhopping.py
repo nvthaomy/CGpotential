@@ -33,8 +33,8 @@ parser.add_argument("-n", default = 2, type = int, help="number of Gaussians")
 parser.add_argument("-x0", type = str,help="initial values for Gaussian parameters, format '1 0.5 -10  0.1'")
 parser.add_argument("-N", default = 1000, type = int, help="number of points used for fitting")
 parser.add_argument("-nostage", action = 'store_true')
-parser.add_argument("-niter", type = int, default = 1000, help ="number of local minimum optimizations")
-parser.add_argument("-T", type = float, default = 0.0000002,#0.0000002, 
+parser.add_argument("-niter", type = int, default = 2000, help ="number of local minimum optimizations")
+parser.add_argument("-T", type = float, default = 0.002,#0.0000002, 
                     help="The “temperature” parameter for the accept or reject criterion. Higher “temperatures” mean that larger jumps in function value will be accepted. For best results T should be comparable to the separation (in function value) between local minima.")
 args = parser.parse_args() 
 
@@ -48,8 +48,8 @@ def obj(x,rs,u_spline):
     Srel = p_spline * (np.log(p_spline) - np.log(p_gauss))
     LSQ  = (p_spline*(u_gauss-u_spline))**2
 
-    return np.sum(Srel)
-    #return np.sum(LSQ/2)
+    #return np.sum(Srel)
+    return np.sum(LSQ/2)
 
 def getUgauss(x,rs,n):
     u_gauss = np.zeros(len(rs))
@@ -87,17 +87,6 @@ def weight(rs,u):
     w = np.exp(-u)
     w = w/np.sum(w)
     return w
-
-def getBounds(n):
-    bounds = ([],[]) 
-    for i in range(n):
-        if i % 2 == 0:
-            bounds[0].extend([0,0])
-            bounds[1].extend([np.inf,np.inf])
-        else:
-            bounds[0].extend([-np.inf,0])
-            bounds[1].extend([0,np.inf])
-    return bounds
 
 class MyBounds(object):
     def __init__(self, xmax=[], xmin=[] ):
@@ -140,6 +129,19 @@ minimizer_kwargs = {"method": "SLSQP","args":(rs,u_spline)}
 #minimizer_kwargs = {"method": "BFGS","args":(rs,u_spline)}   
 #minimizer_kwargs = {"method": 'trust-exact',"args":(rs,u_spline),"jac":'2-point',"hess":'2-point'}   
 
+def getBounds(n):
+    bounds = ([],[]) 
+    lower_energybound = -np.inf
+    upper_energybound = u_max
+    for i in range(n):
+        if i % 2 == 0: #bounds of repulsive Gaussian
+            bounds[0].extend([0,0]) #lower bound of B and K
+            bounds[1].extend([upper_energybound,np.inf]) #upper bound of B and K
+        else: #bounds of attractive Gaussian
+            bounds[0].extend([lower_energybound,0])
+            bounds[1].extend([0,np.inf])
+    return bounds
+
 if not args.nostage:   
     for i in range(n):
         bounds = getBounds(i+1)
@@ -158,10 +160,10 @@ if not args.nostage:
         
         if i == n-1:
             gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
-                                niter = niter, accept_test = mybounds, callback=print_fun)
+                                niter = niter, accept_test = mybounds)
         else:  
             gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
-                                niter = 100, accept_test = mybounds, callback=print_fun)
+                                niter = 100, accept_test = mybounds,callback=print_fun)
             # if want to print out values of minimum found and wheter gets accepted (1) or not (0)
             #gauss =basinhopping(obj, x0, minimizer_kwargs = minimizer_kwargs, T = T,
             #                    niter = niter, accept_test = mybounds,callback=print_fun)
