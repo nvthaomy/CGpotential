@@ -9,6 +9,7 @@ import numpy as np
 from scipy.optimize import least_squares
 import spline, sys, argparse, re
 import matplotlib.pyplot as plt
+import matplotlib
 """Fitting Gaussians to spline using least squares 
    obj: objective function, calculates the Boltzmann weighted residuals 
    constrains: 
@@ -100,18 +101,23 @@ def getBounds(n):
             bounds[0].extend([lower_energybound,0])
             bounds[1].extend([0,np.inf])
     return bounds
-def plot(xopt,rs,n,u_spline):
-    u_gauss = getUgauss(xopt,rs,n)
-    plt.figure()
-    plt.plot(rs,u_spline,label="spline",linewidth = 3)
-    plt.plot(rs,u_gauss,label="{}-Gaussian".format(n),linewidth = 3)
-    plt.scatter(np.linspace(0,rcut,len(knots)),knots,label = "spline knots",c='r')
-    plt.ylim(min(np.min(u_spline),np.min(u_gauss))*2)
+def plot(xopt,rs,n_G,u_spline):
+    u_gauss = getUgauss(xopt,rs,n_G)
+    if n_G == 1:
+        plt.figure(figsize=[10,4])
+        plt.subplot(1,2,1)
+        plt.plot(rs,u_spline,label="spline",linewidth = 2)
+        plt.scatter(np.linspace(0,rcut,len(knots)),knots,label = "spline knots",c='r')
+        plt.ylim(min(np.min(u_spline),np.min(u_gauss))*2)
+    plt.plot(rs,u_gauss,label="{}-Gaussian".format(n_G),linewidth = 1)
     plt.xlim(0,rcut)
     plt.xlabel('r')
     plt.ylabel('u(r)')
     plt.legend(loc='best')
-    plt.show()
+
+#    plt.show()
+
+LSQ = []
     
 if not args.nostage:   
     for i in range(n):
@@ -132,6 +138,7 @@ if not args.nostage:
         xopt = gauss.x
         sys.stdout.write('\n{}'.format(xopt))
         sys.stdout.write('\nLSQ: {}\n'.format(gauss.cost))
+        LSQ.append(gauss.cost)
         plot(xopt,rs,i+1,u_spline)
 
 else:
@@ -149,16 +156,33 @@ else:
     sys.stdout.write('\nParameters from optimizing {} Gaussians:'.format(n))
     sys.stdout.write('\n{}'.format(xopt))
     sys.stdout.write('\nLSQ: {}\n'.format(gauss.cost))
+    LSQ.append(gauss.cost)
     plot(xopt,rs,n,u_spline)
 
 u_gauss = getUgauss(xopt,rs,n)
-plt.figure()
-plt.plot(rs,u_spline,label="spline",linewidth = 3)
-plt.plot(rs,u_gauss,label="{}-Gaussian".format(n),linewidth = 3)
+#plt.figure()
+plt.subplot(1,2,2)
+plt.plot(rs,u_spline,label="spline",linewidth = 2)
+plt.plot(rs,u_gauss,label="{}-Gaussian".format(n),linewidth = 1)
 plt.scatter(np.linspace(0,rcut,len(knots)),knots,label = "spline knots",c='r')
 plt.ylim(min(np.min(u_spline),np.min(u_gauss))*1.1,1)
 plt.xlim(0,rcut)
 plt.xlabel('r')
 plt.ylabel('u(r)')
 plt.legend(loc='best')
+plt.subplots_adjust(wspace=0.2)
+plt.savefig("Spline_to_{}G.png".format(n),dpi=500)
+
+plt.figure()
+plt.ticklabel_format(axis='y',style='sci',scilimits=(0,0))
+plt.scatter(range(1,n+1),LSQ)
+plt.xlim(0,n+1)
+plt.xticks(range(0,n+2,1))
+plt.ylim(np.min(LSQ)*0.9,np.max(LSQ)*1.1)
+plt.xlabel('Number of Gaussians')
+plt.ylabel('Objective')
+
+plt.savefig("Spline_to_{}G_LSQ.png".format(n),dpi=500)
 plt.show()
+
+
