@@ -165,6 +165,22 @@ else:
     plot(xopt,rs,n,u_spline)
 
 u_gauss = getUgauss(xopt,rs,n)
+
+#write the force field file
+s=""">>> POTENTIAL Bond
+{'Dist0' :  ,
+ 'FConst' : }\n"""
+print(s)
+for i in range(n):
+    s += ">>> POTENTIAL LJGauss{}".format(i)
+    s+="\n{'Epsilon' : 0.0000e+00 ,"
+    s+="\n 'B' :  {} ,".format(xopt[i])
+    s +="\n 'Kappa' :  {} ,".format(xopt[i+1])
+    s += """\n 'Dist0' : 0.0000e+00 ,
+ 'Sigma' : 1.0000e+00 }\n""" 
+outfile = open("Spline_to_{}G_ff.dat".format(n),'w')
+outfile.write(s)
+
 #plt.figure()
 plt.subplot(1,2,2)
 plt.plot(rs,u_spline,label="spline",linewidth = 2)
