@@ -173,8 +173,8 @@ s=""">>> POTENTIAL Bond
 for i in range(n):
     s += ">>> POTENTIAL LJGauss{}".format(i)
     s+="\n{'Epsilon' : 0.0000e+00 ,"
-    s+="\n 'B' :  {} ,".format(xopt[i])
-    s +="\n 'Kappa' :  {} ,".format(xopt[i+1])
+    s+="\n 'B' :  {} ,".format(xopt[2*i])
+    s +="\n 'Kappa' :  {} ,".format(xopt[2*i+1])
     s += """\n 'Dist0' : 0.0000e+00 ,
  'Sigma' : 1.0000e+00 }\n""" 
 outfile = open("Spline_to_{}G_ff.dat".format(n),'w')
