@@ -170,7 +170,6 @@ u_gauss = getUgauss(xopt,rs,n)
 s=""">>> POTENTIAL Bond
 {'Dist0' :  ,
  'FConst' : }\n"""
-print(s)
 for i in range(n):
     s += ">>> POTENTIAL LJGauss{}".format(i)
     s+="\n{'Epsilon' : 0.0000e+00 ,"
