@@ -118,7 +118,7 @@ def plot(xopt,rs,n_G,u_spline):
 #    plt.show()
 
 LSQ = []
-    
+outfile = open("Spline_to_{}G.txt".format(n),'w')    
 if not args.nostage:   
     for i in range(n):
         bounds = getBounds(i+1)
@@ -127,20 +127,25 @@ if not args.nostage:
             sys.stdout.write('\nInitial guess for 1st Gaussian:')
             sys.stdout.write('\nB: {}, K: {}'.format(x0[0],x0[1]))
             sys.stdout.write('\nParameters from optimizing {} Gaussian:'.format(i+1))            
-
+            outfile.write('Spline knots:\n{}\n'.format(args.k))
+            outfile.write('Cut:  {}'.format(rcut))
+            outfile.write('\n\nDecomposing spline into Gaussians, parameters are in the form: [B1, K1, B2, K2,...,Bn,Kn]\n')
+            outfile.write('\nParameters from optimizing {} Gaussian:\n'.format(i+1))
         else:
             x0 = [p for p in xopt]
             x0.extend([0,0])
             sys.stdout.write('\nInitial guess: {}'.format(x0))
             sys.stdout.write('\nParameters from optimizing {} Gaussians:'.format(i+1))
-            
+            outfile.write('Parameters from optimizing {} Gaussians:\n'.format(i+1))
         gauss = least_squares(obj,x0, args = (w,rs,u_spline),bounds=bounds)
         xopt = gauss.x
         sys.stdout.write('\n{}'.format(xopt))
+        outfile.write('{}\n'.format(xopt))
         sys.stdout.write('\nLSQ: {}\n'.format(gauss.cost))
+        outfile.write('LSQ: {}\n\n'.format(gauss.cost))
         LSQ.append(gauss.cost)
         plot(xopt,rs,i+1,u_spline)
-
+    outfile.close()
 else:
     if len(args.x0) == 0:
         raise Exception('Need initial values of Gaussian parameters')
