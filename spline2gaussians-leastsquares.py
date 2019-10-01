@@ -86,7 +86,13 @@ def weight(rs,u_spline):
 rs = np.linspace(0,rcut,N)
 u_spline, du_spline = getUspline(knots,rcut,rs)
 u_max = np.max(u_spline)
-
+u_spline_actual = getUspline(knots,rcut,rs,MaxPairEnekBT = 10**5)[0]
+#write into file spline potential before and after linear expolation in the hard core region
+f=open('spline_pair.txt','w')
+f.write('# r u_actual u_fix_hardcore')
+for i,r in enumerate(rs):
+    f.write('\n{r} {u_actual} {u_fix_hardcore}'.format(r=r,u_actual=u_spline_actual[i],u_fix_hardcore=u_spline[i]))
+f.close()
 w = weight(rs,u_spline)
 
 def getBounds(n):
